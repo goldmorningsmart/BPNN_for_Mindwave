@@ -96,3 +96,7 @@ class BPNN(object):
             predict_ans.append(np.argmax(test))
             label.append(np.argmax(_label))
         return accuracy_score(label,predict_ans)
+def savemodel_pb():
+       constant_graph = graph_util.convert_variables_to_constants(sess, sess.graph_def, ["output"])
+            with tf.gfile.FastGFile(pb_file_path, mode='wb') as f:
+                f.write(constant_graph.SerializeToString())
