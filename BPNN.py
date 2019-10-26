@@ -1,15 +1,10 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-# @Time    : 2019/10/26
-# @Author  : Goldmorningsmart
-# @File    : BPNN.py
-
 
 import tensorflow as tf
 import numpy as np
 from sklearn.metrics import accuracy_score
-
+from tensorflow.python.framework import graph_util
 class BPNN(object):
+     
     def __init__(self,input_n,hidden_n,output_n,lambd):
         """
         这是BP神经网络类的构造函数
@@ -18,24 +13,36 @@ class BPNN(object):
         :param output_n: 输出层神经元个数
         :param lambd: 正则化系数
         """
-        self.Train_Data = tf.placeholder(tf.float64,shape=(None,input_n),name='input_dataset')                                  # 训练数据集
-        self.Train_Label = tf.placeholder(tf.float64,shape=(None,output_n),name='input_labels')                                 # 训练数据集标签
-        self.input_n = input_n                                                                                                    # 输入层神经元个数
-        self.hidden_n = hidden_n                                                                                                  # 隐含层神经元个数
-        self.output_n = output_n                                                                                                  # 输出层神经元个数
-        self.lambd = lambd                                                                                                        # 正则化系数
-        self.input_weights = tf.Variable(tf.random_normal((self.input_n, self.hidden_n),mean=0,stddev=1,dtype=tf.float64),trainable=True)                                       # 输入层与隐含层之间的权重
-        self.hidden_weights =  tf.Variable(tf.random_normal((self.hidden_n,self.output_n),mean=0,stddev=1,dtype=tf.float64),trainable=True)                                      # 隐含层与输出层之间的权重
-        self.hidden_threshold = tf.Variable(tf.random_normal((1,self.hidden_n),mean=0,stddev=1,dtype=tf.float64),trainable=True)                                            # 隐含层的阈值
-        self.output_threshold = tf.Variable(tf.random_normal((1,self.output_n),mean=0,stddev=1,dtype=tf.float64),trainable=True)                                            # 输出层的阈值
+        self.Train_Data = tf.placeholder(tf.float64,shape=(None,input_n),name='input_dataset')                                 # 训练数据集
+        self.Train_Label = tf.placeholder(tf.float64,shape=(None,output_n),name='input_labels')                                # 训练数据集标签
+        self.input_n = input_n                                                                                                 # 输入层神经元个数
+        self.hidden_n = 15                                                                                                     # 1隐含层神经元个数
+        self.hidden_2 = 30                                                                                                     # 2隐含层神经元个数
+        self.hidden_3 = 15                                                                                                     # 3隐含层神经元个数
+        self.output_n = output_n                                                                                               # 输出层神经元个数
+        self.lambd = lambd                                                                                                     # 正则化系数
+        self.input_weights = tf.Variable(tf.random_normal((self.input_n, self.hidden_n),mean=0,stddev=1,dtype=tf.float64),trainable=True)     
+        self.hidden_weights =  tf.Variable(tf.random_normal((self.hidden_n,self.hidden_n2),mean=0,stddev=1,dtype=tf.float64),trainable=True)                                          
+        self.hidden_weights2 =  tf.Variable(tf.random_normal((self.hidden_n2,self.hidden_n3),mean=0,stddev=1,dtype=tf.float64),trainable=True) 
+        self.hidden_weights3 =  tf.Variable(tf.random_normal((self.hidden_n3,self.output_n),mean=0,stddev=1,dtype=tf.float64),trainable=True)
+        self.hidden_threshold = tf.Variable(tf.random_normal((1,self.hidden_n),mean=0,stddev=1,dtype=tf.float64),trainable=True)
+        self.hidden_threshold2 = tf.Variable(tf.random_normal((1,self.hidden_2),mean=0,stddev=1,dtype=tf.float64),trainable=True)
+        self.hidden_threshold3 = tf.Variable(tf.random_normal((1,self.hidden_3),mean=0,stddev=1,dtype=tf.float64),trainable=True)                                             
+        self.output_threshold = tf.Variable(tf.random_normal((1,self.output_n),mean=0,stddev=1,dtype=tf.float64),trainable=True)                                          
         # 将层与层之间的权重与偏置项加入损失集合
         tf.add_to_collection('loss', tf.contrib.layers.l2_regularizer(self.lambd)(self.input_weights))
         tf.add_to_collection('loss', tf.contrib.layers.l2_regularizer(self.lambd)(self.hidden_weights))
+        tf.add_to_collection('loss', tf.contrib.layers.l2_regularizer(self.lambd)(self.hidden_weights2))
+        tf.add_to_collection('loss', tf.contrib.layers.l2_regularizer(self.lambd)(self.hidden_weights3))
         tf.add_to_collection('loss', tf.contrib.layers.l2_regularizer(self.lambd)(self.hidden_threshold))
+        tf.add_to_collection('loss', tf.contrib.layers.l2_regularizer(self.lambd)(self.hidden_threshold2))
+        tf.add_to_collection('loss', tf.contrib.layers.l2_regularizer(self.lambd)(self.hidden_threshold3))     
         tf.add_to_collection('loss', tf.contrib.layers.l2_regularizer(self.lambd)(self.output_threshold))
         # 定义前向传播过程
         self.hidden_cells = tf.sigmoid(tf.matmul(self.Train_Data,self.input_weights)+self.hidden_threshold)
-        self.output_cells = tf.sigmoid(tf.matmul(self.hidden_cells,self.hidden_weights)+self.output_threshold)
+        self.hidden_cells2 = tf.sigmoid(tf.matmul(self.hidden_cells,self.hidden_weights2)+self.hidden_threshold2)
+        self.hidden_cells3 = tf.sigmoid(tf.matmul(self.hidden_cells2,self.hidden_weights3)+self.hidden_threshold3)
+        self.output_cells = tf.sigmoid(tf.matmul(self.hidden_cells3,self.hidden_weights)+self.output_threshold)
         # 定义损失函数,并加入损失集合
         self.MSE = tf.reduce_mean(tf.square(self.output_cells-self.Train_Label))
         tf.add_to_collection('loss',self.MSE)
@@ -57,6 +64,7 @@ class BPNN(object):
         train_loss = []                 # 训练损失
         test_loss = []                  # 测试损失
         test_accarucy = []              # 测试精度
+        saver=tf.train.Saver()
         with tf.Session() as sess:
             datasize = len(Train_Label)
             self.train_step = tf.train.GradientDescentOptimizer(learn_rate).minimize(self.loss)
@@ -80,6 +88,8 @@ class BPNN(object):
                 # 测试精度
                 test_result = sess.run(self.output_cells,feed_dict={self.Train_Data:Test_Data})
                 test_accarucy.append(self.Accuracy(test_result,Test_Label))
+                tf.train.write_graph(sess.graph_def,"model/",'model.pb',as_text=False)
+                saver.save(sess,'model/model.ckpt')
         return train_loss,test_loss,test_accarucy
 
     def Accuracy(self,test_result,test_label):
@@ -96,7 +106,5 @@ class BPNN(object):
             predict_ans.append(np.argmax(test))
             label.append(np.argmax(_label))
         return accuracy_score(label,predict_ans)
-def savemodel_pb():
-       constant_graph = graph_util.convert_variables_to_constants(sess, sess.graph_def, ["output"])
-            with tf.gfile.FastGFile(pb_file_path, mode='wb') as f:
-                f.write(constant_graph.SerializeToString())
+
+   
