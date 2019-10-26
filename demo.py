@@ -1,11 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# @Time    : 2018/10/710:22
-# @Author  : DaiPuWei
-# E-Mail   : 771830171@qq.com
-# @Site    : 中国民航大学北教25实验室506
-# @File    : demo.py
-# @Software: PyCharm
+# @Time    : 2019/10/26
+# @Author  : Goldmorningsmart
 
 import numpy as np
 import matplotlib as mpl
