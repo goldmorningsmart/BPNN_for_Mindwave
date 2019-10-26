@@ -63,7 +63,7 @@ def run_main():
     # 训练并测试网络
     bpnn = BPNN(input_n,hidden_n,output_n,lambd)
     train_loss,test_loss,test_accuracy = bpnn.train_test(Train_Data,Train_Label,Test_Data,Test_Label,learn_rate,epoch,iteration,batch_size)
-
+    savemodel_pb()
     # 解决画图是的中文乱码问题
     mpl.rcParams['font.sans-serif'] = [u'simHei']
     mpl.rcParams['axes.unicode_minus'] = False
