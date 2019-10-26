@@ -42,7 +42,7 @@ def run_main():
        这是主函数
     """
     # 导入数据
-    path = './voice_data.txt'
+    path = './data.txt'
     Data,Label = Load_Voice_Data(path)
 
     # 分割数据集,并对数据集进行标准化
