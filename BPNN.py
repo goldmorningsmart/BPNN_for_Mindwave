@@ -16,7 +16,7 @@ class BPNN(object):
         self.Train_Data = tf.placeholder(tf.float64,shape=(None,input_n),name='input_dataset')                                 # 训练数据集
         self.Train_Label = tf.placeholder(tf.float64,shape=(None,output_n),name='input_labels')                                # 训练数据集标签
         self.input_n = input_n                                                                                                 # 输入层神经元个数
-        self.hidden_n = 15                                                                                                    # 1隐含层神经元个数
+        self.hidden_n = hidden_n                                                                                                    # 1隐含层神经元个数
         self.hidden_2 = 30                                                                                                  # 2隐含层神经元个数
         self.hidden_3 = 15                                                                                                    # 3隐含层神经元个数
         self.output_n = output_n                                                                                               # 输出层神经元个数
